@@ -11,21 +11,21 @@
   "license": "ISC",
   "dependencies": {
     "@sendgrid/mail": "^8.1.4",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "helmet": "^4.0.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "login-api": "file:",
-    "mongodb": "^6.11.0",
-    "mongoose": "^8.9.2",
-    "nodemailer": "^6.9.16",
-    "twilio": "^5.4.0"
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.12.2",
+    "nodemailer": "^6.10.0",
+    "twilio": "^5.5.1"
   },
   "devDependencies": {
-    "@types/node": "^22.10.1"
+    "@types/node": "^22.13.11"
   }
 }
