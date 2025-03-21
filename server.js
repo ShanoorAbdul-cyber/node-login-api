@@ -78,80 +78,36 @@ app.post("/api/users/login", async (req, res) => {
       res.status(500).json({ message: "Error logging in", error });
     }
   });
-  
-  
 
-// Forgot Password Route
-app.post('/api/users/forgot-password', async (req, res) => {
-    const { email } = req.body;
-  
-    // Ensure email is provided in the request
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
-    }
-  
+
+// verify-otp Route
+  app.post("/api/verify-otp", async (req, res) => {
+    const { email, otp } = req.body;
+
     try {
-      // Make sure email is lowercase before querying
-      const user = await User.findOne({ email: email.toLowerCase() });
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      const resetToken = crypto.randomBytes(32).toString('hex');
-      user.resetPasswordToken = resetToken;
-      user.resetPasswordExpire = Date.now() + 3600000; // 1 hour expiry
-      await user.save();
-  
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-  
-      const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: user.email,
-        subject: 'Password Reset Request',
-        text: `You have requested to reset your password. Please click the link to reset: ${resetUrl}`,
-      };
-  
-      await transporter.sendMail(mailOptions);
-      res.json({ message: 'Password reset email sent successfully' });
+        if (!email || !otp) {
+            return res.status(400).json({ message: "Email and OTP are required" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.otp !== otp || user.otpExpire < Date.now()) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
+
+        // Clear the OTP after successful verification
+        user.otp = null;
+        user.otpExpire = null;
+        await user.save();
+
+        res.status(200).json({ message: "OTP verified successfully" });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error processing request", error: error.message });
+        console.error("Error verifying OTP:", error);
+        res.status(500).json({ message: "Error verifying OTP", error });
     }
-  });
-  
-
-// Reset Password Route
-app.post('/api/users/reset-password/:token', async (req, res) => {
-  const { token } = req.params;
-  const { password } = req.body;
-  
-  try {
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpire: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired reset token" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    user.password = hashedPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save();
-
-    res.json({ message: "Password has been reset successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error resetting password", error });
-  }
 });
 
 // MongoDB Connection and Server Start
