@@ -6,7 +6,7 @@ const helmet = require("helmet");
 
 const userRoutes = require("./routes/auth");
 const userDetailsRoutes = require("./routes/userDetails");
-
+const createUserRoutes = require("./routes/createUser");
 dotenv.config();
 
 const app = express();
@@ -19,6 +19,7 @@ app.use(helmet());
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/userdetails", userDetailsRoutes);
+app.use("/api/createUser", createUserRoutes);
 
 // MongoDB connection
 mongoose
