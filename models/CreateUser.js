@@ -7,7 +7,4 @@ const CreateUserSchema = new mongoose.Schema({
   role: { type: String, required: true },
 }, { timestamps: true });
 
-// CreateUserSchema.index({ email: 1 }, { unique: true });
-// CreateUserSchema.index({ mobile: 1 }, { unique: true });
-
 module.exports = mongoose.model("CreateUser", CreateUserSchema, "createUser");
