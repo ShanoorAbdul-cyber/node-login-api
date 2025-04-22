@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { v4: uuidv4 } = require("uuid");
 const OrdersList = require("../models/PlaceOrder");
+const OrderHistory = require("../models/OrderHistory");
 
 // Place Order
 router.post("/placeOrder", async (req, res) => {
@@ -144,16 +145,56 @@ router.get('/getOrders', async (req, res) => {
   });
 
 router.delete('/deleteOrder/:id', async (req, res) => {
-try {
-    await OrdersList.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "Order deleted successfully" });
-} catch (err) {
-    res.status(500).json({ message: "Error deleting order" });
-}
+  try {
+    const order = await OrdersList.findById(req.params.id);
+
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    // Move order to history
+    await OrderHistory.create({
+      tableId: order.tableId,
+      tableName: order.tableName,
+      items: order.items,
+    });
+
+    // Delete the order from active collection
+    await order.deleteOne();
+
+    res.json({ message: 'Order closed and archived successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
-  
-  
-  
-  
+
+router.get('/itemStats', async (req, res) => {
+  const { type } = req.query;
+  const now = new Date();
+  let start;
+
+  if (type === 'daily') {
+    start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  } else if (type === 'monthly') {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+  } else if (type === 'yearly') {
+    start = new Date(now.getFullYear(), 0, 1);
+  } else {
+    return res.status(400).json({ error: 'Invalid type' });
+  }
+
+  const stats = await OrderHistory.aggregate([
+    { $match: { closedAt: { $gte: start } } },
+    { $unwind: '$items' },
+    {
+      $group: {
+        _id: '$items.name',
+        totalQuantity: { $sum: '$items.quantity' },
+        totalIncome: { $sum: { $multiply: ['$items.quantity', '$items.price'] } },
+      }
+    },
+    { $sort: { totalIncome: -1 } }
+  ]);
+
+  res.json(stats);
+});
 
 module.exports = router;
