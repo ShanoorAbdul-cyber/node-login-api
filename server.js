@@ -9,6 +9,7 @@ const userDetailsRoutes = require("./routes/userDetails");
 const createUserRoutes = require("./routes/createUser");
 const meanuDetailsRoutes = require("./routes/meanuList");
 const placeOrderRoutes = require("./routes/placeOrder");
+const chatApi = require("./routes/chat");
 dotenv.config();
 
 const app = express();
@@ -24,6 +25,7 @@ app.use("/api/userdetails", userDetailsRoutes);
 app.use("/api/createUser", createUserRoutes);
 app.use("/api/meanuList", meanuDetailsRoutes);
 app.use("/api", placeOrderRoutes);
+app.use("/api", chatApi);
 
 // MongoDB connection
 mongoose
