@@ -7,7 +7,6 @@ const openai = new OpenAI({
 async function getAIResponse(messages) {
   try {
     const completion = await openai.chat.completions.create({
-    //   model: "gpt-4-mini",
       model: "gpt-4o-mini", 
       messages,
     });

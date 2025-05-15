@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const helmet = require("helmet");
+const bodyParser = require('body-parser');
 
 const userRoutes = require("./routes/auth");
 const userDetailsRoutes = require("./routes/userDetails");
@@ -15,6 +16,7 @@ dotenv.config();
 const app = express();
 
 // Middleware
+app.use(bodyParser.json());
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
